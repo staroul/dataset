@@ -36,6 +36,24 @@ req_url = requests.get(format_url)
 
 soup_url = BeautifulSoup(req_url.text, "lxml")
 
-cate = re.findall(r'"cate_id":"(\d+)","cate_type":"(3)","cate_name":"([\\u\w+/]+)",.*?"url":"(.*?)"', soup_url.text)
-if cate:
-    print(cate)
+# 找出一二级菜单id对应的名字 用以文件夹命名
+cate_dic = re.findall(r'"cate_id":"(\d+)","cate_type":"[12]","cate_name":"([\\u\w+/]+)"', soup_url.text)
+name_dic = {}
+for item in cate_dic:
+    name_dic[item[0]] = item[1].encode('utf-8').decode('unicode_escape')
+print(name_dic)
+
+cate = re.findall(r'"cate_id":"(\d+)","cate_type":"(3)","cate_name":"([\\u\w+/]+)","top_cate_id":"(\d+)",'
+                  r'"sub_cate_id":"(\d+)",.*?"url":"(.*?)"', soup_url.text)
+url_dic = {}
+for item in cate:
+    for key, value in name_dic.items():
+        if item[3] == key:
+            name = value
+        if item[4] == key:
+            name = name+'_'+value
+    name = name+'_'+item[2].encode('utf-8').decode('unicode_escape')
+    url_dic[name] = item[5]
+print(url_dic)
+
+
