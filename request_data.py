@@ -1,59 +1,24 @@
-import requests
-import re
-from bs4 import BeautifulSoup
+import spider
+import download
 
-# 获取唯品会商品页面内容
-root = requests.get('https://category.vip.com/')
+# 设置根url 获取唯品会商品页面内容
+root_url = 'https://category.vip.com/'
+soup = spider.get_soup(root_url)
 
-# 将网页文本写入txt中使用编辑器打开方便查看如何过滤数据
-# filename = 'sample.html'
-# with open(filename, 'w', encoding='utf-8') as file:
-#     file.write(root.text)
+# 抓取tree_id、c_id
+tree_id = spider.get_tree_id(soup)
+c_id = spider.get_c_id(soup)
 
-# 生成BeautifulSoup对象
-# 使用lxml第三方解析器
-soup = BeautifulSoup(root.text, "lxml")
-
-# 获取json数据所需tree_id
-tree_id = re.search(r'"tree_id":(\d+)', soup.text)
-
-# 获取json数据所需cid
-#  中文编码之 .encode('utf-8').decode('unicode_escape')
-c_id = re.findall(r'"cate_id":"(\d+)"', soup.text)
-# if c_id:
-#     for cid in c_id:
-#         # 获取json数据url
-#         json_url = 'https://category.vip.com/ajax/getTreeList.php?cid={}&tree_id={}'.format(cid[1], tree_id.group(2))
-#         print(json_url)
-
-# 测试获取json中的各个小类的url
-format_url = 'https://category.vip.com/ajax/getTreeList.php?cid={}&tree_id={}'.format(c_id[0], tree_id.group(1))
-req_url = requests.get(format_url)
-
-# filename = 'sample_req.json'
-# with open(filename, 'w', encoding='utf-8') as file:
-#     file.write(req_url.text)
-
-soup_url = BeautifulSoup(req_url.text, "lxml")
-
-# 找出一二级菜单id对应的名字 用以文件夹命名
-cate_dic = re.findall(r'"cate_id":"(\d+)","cate_type":"[12]","cate_name":"([\\u\w+/]+)"', soup_url.text)
-name_dic = {}
-for item in cate_dic:
-    name_dic[item[0]] = item[1].encode('utf-8').decode('unicode_escape')
-print(name_dic)
-
-cate = re.findall(r'"cate_id":"(\d+)","cate_type":"(3)","cate_name":"([\\u\w+/]+)","top_cate_id":"(\d+)",'
-                  r'"sub_cate_id":"(\d+)",.*?"url":"(.*?)"', soup_url.text)
-url_dic = {}
-for item in cate:
-    for key, value in name_dic.items():
-        if item[3] == key:
-            name = value
-        if item[4] == key:
-            name = name+'_'+value
-    name = name+'_'+item[2].encode('utf-8').decode('unicode_escape')
-    url_dic[name] = item[5]
-print(url_dic)
-
-
+for c_item in c_id[6:7]:
+    # 使用tree_id、c_id设置获取类别对应链接的url
+    format_url = 'https://category.vip.com/ajax/getTreeList.php?cid={}&tree_id={}'.format(c_item, tree_id)
+    url_soup = spider.get_soup(format_url)
+    name_dic = spider.get_name_dic(url_soup)
+    url_dic = spider.get_url_dic(url_soup, name_dic)
+    for folder, url in url_dic.items():
+        product_list = spider.get_product_list(url)
+        # 由于唯品会网站限制，先取前五十个进行存取
+        download.down_img(folder, product_list[:50])
+        if len(product_list) >= 50:
+            download.down_img(folder, product_list[50:])
+        print(folder + ' 已下载完成')
