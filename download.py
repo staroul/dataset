@@ -4,12 +4,14 @@ import spider
 
 
 def save_img(folder, img_list):
+    """根据图片链接使用urllib将图片进行下载保存"""
     for img_item in img_list:
         img_save = folder + '/' + img_item.split('/')[-1]
         urllib.request.urlretrieve(img_item.replace('\\', ''), img_save)
 
 
 def down_img(folder, product_list):
+    """根据文件夹，将列表中的图片进行下载"""
     # 单个类别的图片爬取
     img_url = spider.get_img_url(product_list)
 
