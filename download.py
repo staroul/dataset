@@ -22,6 +22,6 @@ def down_img(folder, product_list):
     # 创建存放文件夹
     if not (os.path.exists(folder)):
         os.mkdir(folder)
-        # 将列表的图片链接进行下载存放
-        save_img(folder, img_list)
+    # 将列表的图片链接进行下载存放
+    save_img(folder, img_list)
     return

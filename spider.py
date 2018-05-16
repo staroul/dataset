@@ -30,7 +30,7 @@ def get_c_id(soup):
 
 def get_name_dic(soup):
     """通过正则表达式搜索一二级标签编号及对应名称，并以字典形式返回"""
-    cate_list = re.findall(r'"cate_id":"(\d+)","cate_type":"[12]","cate_name":"([\\u\w+/]+)"', soup)
+    cate_list = re.findall(r'"cate_id":"(\d+)","cate_type":"[1]","cate_name":"([\\u\w+/]+)"', soup)
     name_dic = {}
     for item in cate_list:
         name_dic[item[0]] = url_simplify(item[1])
@@ -39,7 +39,7 @@ def get_name_dic(soup):
 
 def get_url_dic(soup, name_dic):
     """通过正则表达式搜索三级标签对应的上级标签编号，对应的url，并将整体名称以及url以字典形式返回"""
-    cate = re.findall(r'"cate_id":"(\d+)","cate_type":"(3)","cate_name":"([\\u\w+/]+)","top_cate_id":"(\d+)",'
+    cate = re.findall(r'"cate_id":"(\d+)","cate_type":"(2)","cate_name":"([\\u\w+/]+)","top_cate_id":"(\d+)",'
                       r'"sub_cate_id":"(\d+)",.*?"url":"(.*?)"', soup)
 
     # 将三级菜单中的链接与文件夹名对应存放在字典中
@@ -80,7 +80,7 @@ def get_img_url(product_list):
 
 def get_img_list(soup):
     """通过正则表达式搜索返回图片链接"""
-    return re.findall('"image3":"(.*?)",', soup)
+    return re.findall('"(?:image[37]|smallImage)":"(.*?)",', soup)
 
 
 def url_simplify(url):
